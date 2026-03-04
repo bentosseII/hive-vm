@@ -1,0 +1,8 @@
+# Runtime/package outputs not needed in npm tarball
+tests
+spec
+.hivevm
+coverage
+node_modules
+*.log
+.DS_Store
