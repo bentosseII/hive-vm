@@ -1,9 +1,7 @@
 # HiveVM
 
 Airbnb for agent compute.
-
-HiveVM is an agent-native compute marketplace: CLI + control plane to schedule, meter, and bill
-CPU/RAM workloads across hosts.
+HiveVM is an agent-native compute marketplace: CLI + control plane to schedule, meter, and bill CPU/RAM workloads across hosts. Hosts list spare compute. Agents rent it. Settlement happens in USDC on Solana and Base via x402.
 
 ## Quick Start
 
@@ -35,11 +33,48 @@ hive logs <workload_id>
 - Metering: per-second runtime usage ticks.
 - Billing: per-minute line items and host payout split.
 - Pools: private compute pools and pool-constrained placement.
+- Settlement: USDC payouts on Solana and Base via x402 protocol.
 
 Core runtime defaults:
 - Local state root: `.hivevm/`
 - SQLite DB: `.hivevm/hivevm.db`
 - Platform take rate: `25%`
+
+## x402 Settlement
+
+Hosts get paid in USDC. When a billing cycle closes, HiveVM settles the metered usage on-chain using the [x402 protocol](https://x402.org) — the HTTP 402 Payment Required standard for machine-to-machine payments.
+
+```
+Workload completes → Metering finalizes CPU/RAM bill
+    → Settlement constructs USDC transfer on host's chain
+    → x402 facilitator verifies + settles on-chain
+    → Host wallet receives USDC
+```
+
+### Chain Simulator
+
+Validate the full settlement pipeline before going live:
+
+```bash
+# Run full simulation (health check, metering, settlement, mint, stress test)
+HELIUS_API_KEY=<key> bun run bin/hive-sim-chains.ts --mode full
+
+# Simulate 20 hosts with 50 workloads each
+bun run bin/hive-sim-chains.ts --hosts 20 --workloads 50 --chain all
+
+# Stress test Base settlement with 10% failure injection
+bun run bin/hive-sim-chains.ts --mode stress --chain base --failure-rate 0.1
+
+# Options
+--chain <solana|base|all>                Target chain (default: all)
+--mode <settle|meter|mint|stress|full>   Simulation mode (default: full)
+--hosts <n>                              Simulated host count (default: 5)
+--workloads <n>                          Workloads per host (default: 10)
+--failure-rate <0-1>                     Inject failures (default: 0)
+--verbose, -v                            Detailed output
+```
+
+The simulator generates realistic hosts across regions, creates workloads with actual CPU/RAM utilization patterns, meters them through the pricing engine, and simulates USDC settlement on both Solana (SPL transfer via Helius) and Base (ERC-20 transfer with EIP-1559 fee estimation). It also benchmarks RPC throughput and latency percentiles (p50/p95/p99) under concurrent load.
 
 ## CLI Reference
 
