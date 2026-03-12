@@ -1,7 +1,8 @@
-# HiveVM
+# Hive
 
 Airbnb for agent compute.
-HiveVM is an agent-native compute marketplace: CLI + control plane to schedule, meter, and bill CPU/RAM workloads across hosts. Hosts list spare compute. Agents rent it. Settlement happens in USDC on Solana and Base via x402.
+
+Hive-VM is an agent-native compute marketplace: CLI + control plane to schedule, meter, and bill CPU/RAM workloads across hosts. Hosts list spare compute. Agents rent it. Settlement happens in USDC on Solana and Base via x402.
 
 ## Quick Start
 
